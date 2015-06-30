@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+  <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
+  <route>
+    <from uri="file:src/data?noop=true"/>
+    <choice>
+      <when id="when1">
+        <xpath>/person/city='London'</xpath>
+        <log message="uk messages" logName="1"/>
+        <to uri="file:target/messages/uk"/>
+      </when>
+      <otherwise>
+        <log message="other messages" logName="2"/>
+        <to uri="file:target/messages/uk"/>
+ 
+        <to uri="bean:order_to_sql"/>
+        <to uri="jdbc:dbcp_new"/>
+        
+      </otherwise>
+    </choice>
+  </route>
+</camelContext>
+
+
+ 
+
+<bean id="order_to_sql" class="simple_route.OrderToSqlBean" />
+  
+
+  <bean id="dbcp_new" destroy-method="close" class="org.apache.commons.dbcp.BasicDataSource">
+    <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+    <property name="url" value="jdbc:sqlserver://server:1433;databaseName=db"/>
+    <property name="username" value="sa"/>
+    <property name="password" value=""/>
+  </bean>
+
+  
+ 
+</beans>
